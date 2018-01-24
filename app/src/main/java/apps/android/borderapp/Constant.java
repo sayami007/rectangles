@@ -8,4 +8,5 @@ class Constant {
     public static final String MOVE = "MOVE";
     public static final String RIGHT= "RIGHT";
     public static final String BOTTOM = "BOTTOM";
+    public static final String BORDER = "BORDER";
 }

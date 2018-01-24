@@ -4,10 +4,13 @@ package apps.android.borderapp;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
 import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -26,12 +29,12 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     private ImageView ic_move;
     private ImageView ic_right;
     private ImageView ic_bottom;
-  //  private RectangleBorder border;
+    public RectangleBorder border;
     private LayoutParams iv_move;
     private LayoutParams iv_scale_right;
     private LayoutParams iv_scale_bottom;
-    private float bottomCorner = 200;
-    private float rightCorner = 200;
+    private float bottomCorner;
+    private float rightCorner;
     private Context ctx;
     private LayoutParams iv_border_params;
     private LayoutParams this_params;
@@ -43,7 +46,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     }
 
     public void setBottomCorner(float bottomCorner) {
-        this.bottomCorner = bottomCorner;
+        this.bottomCorner = bottomCorner - 30;
     }
 
     public float getRightCorner() {
@@ -51,7 +54,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     }
 
     public void setRightCorner(float rightCorner) {
-        this.rightCorner = rightCorner;
+        this.rightCorner = rightCorner - 50;
     }
     //endregion
 
@@ -59,12 +62,12 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     RectangleClass(Context ctx) {
         super(ctx);
         this.ctx = ctx;
-        this.setBackgroundColor(Color.RED);
         initContent();
         initParams();
         addViewToMain();
     }
     //endregion
+
 
     //region Initialize
     private void initContent() {
@@ -87,11 +90,13 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         ic_move.setRotation(135);
         ic_move.setTag(Constant.MOVE);
         //
+        border = new RectangleBorder(ctx);
+        border.setTag(Constant.BORDER);
+        //
         ic_move.setOnTouchListener(this);
         ic_right.setOnTouchListener(this);
         ic_bottom.setOnTouchListener(this);
-        //
-       // border = new RectangleBorder(ctx);
+        //   border.setOnTouchListener(this);
     }
 
     private void initParams() {
@@ -99,9 +104,12 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         //
         this_params = new LayoutParams(size, size);
         this_params.gravity = Gravity.CENTER;
+        this_params.setMargins(50, 50, 50, 50);
+        setBottomCorner(this_params.height);
+        setRightCorner(this_params.width);
         //
         iv_border_params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-       // border.setPadding(10, 10, 10, 10);
+        iv_border_params.setMarginStart(40);
         //
         iv_move = new LayoutParams(convertDpToPixel(BUTTON_SIZE_DP, getContext()), convertDpToPixel(BUTTON_SIZE_DP, getContext()));
         iv_move.gravity = Gravity.START | Gravity.TOP;
@@ -116,12 +124,13 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     }
 
     private void addViewToMain() {
-       // this.addView(border, iv_border_params);
+        this.addView(border, iv_border_params);
         this.addView(ic_move, iv_move);
         this.addView(ic_right, iv_scale_right);
         this.addView(ic_bottom, iv_scale_bottom);
     }
     //endregion
+
 
     //region listener
     @Override
@@ -129,31 +138,24 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         switch (event.getAction()) {
             case MotionEvent.ACTION_MOVE: {
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) this.getLayoutParams();
-                TypedValue tv = new TypedValue();
-                int actionBarHeight = 0;
-                if (this.ctx.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-                    actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-                }
-                if (v.getTag() == Constant.MOVE) {
-                    int topSize = (int) event.getRawY() - actionBarHeight;
-                    params.setMarginStart((int) event.getRawX());
-                    params.setMargins(0, topSize, 0, 0);
+                if (v.getTag() == Constant.MOVE || v.getTag() == Constant.BORDER) {
+                    int topSize = (int) event.getRawY() - getStatusBarHeight() - getActionBarHeight(this.ctx);
+                    params.setMargins((int) event.getRawX(), topSize, 0, 0);
                     this.setLayoutParams(params);
                     this.postInvalidate();
                     this.requestLayout();
                 } else if (v.getTag() == Constant.RIGHT) {
                     int rightSize = (int) event.getRawX() - params.getMarginStart();
                     this.getLayoutParams().width = rightSize;
-                 //   setRightCorner(this.getWidth());
-               //     border.invalidate();
+                    setRightCorner(this.getWidth());
+                    border.invalidate();
                     this.postInvalidate();
                     this.requestLayout();
                 } else if (v.getTag() == Constant.BOTTOM) {
-                    System.out.println("ACTION +" + actionBarHeight);
-                    int bottomSize = (int) event.getRawY() - params.topMargin - actionBarHeight;
+                    int bottomSize = (int) event.getRawY() - params.topMargin - getActionBarHeight(this.ctx);
                     this.getLayoutParams().height = bottomSize;
-                   // setBottomCorner(this.getHeight());
-                    //border.invalidate();
+                    setBottomCorner(this.getHeight());
+                    border.invalidate();
                     this.postInvalidate();
                     this.requestLayout();
                 }
@@ -165,6 +167,24 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     //endregion
 
     //region methods
+    private int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    private int getActionBarHeight(Context context) {
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        }
+        return actionBarHeight;
+    }
+
     private static int convertDpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -172,7 +192,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         return (int) px;
     }
 
-    private void setControlItemsHidden(boolean isControlItemVisible) {
+    public void setControlItemsHidden(boolean isControlItemVisible) {
         if (isControlItemVisible) {
             ic_move.setVisibility(VISIBLE);
             ic_right.setVisibility(VISIBLE);
@@ -182,27 +202,80 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
             ic_right.setVisibility(GONE);
             ic_bottom.setVisibility(GONE);
         }
+        this.postInvalidate();
+        this.requestLayout();
     }
-//endregion
+    //endregion
 
     //region Rectangle Border Class
-    class RectangleBorder extends View {
+    class RectangleBorder extends View implements OnTouchListener {
         public Paint mPaint;
+        public boolean isFinalBitmap;
+        public boolean isErasable = false;
+        public Bitmap bitmap;
+        private Canvas canvas;
+
+        public Canvas getCanvas() {
+            return canvas;
+        }
+
+        public void setCanvas(Canvas canvas) {
+            this.canvas = canvas;
+        }
+
+        private int borderRadius;
+
+
+        public int getBorderRadius() {
+            return borderRadius;
+        }
+
+        public void setBorderRadius(int borderRadius) {
+            this.borderRadius = borderRadius;
+        }
+
+        RectF rect;
 
         public RectangleBorder(Context context) {
             super(context);
+            this.setOnTouchListener(this);
         }
 
         @SuppressLint("DrawAllocation")
         @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            mPaint = new Paint();
-            mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(20);
-            mPaint.setColor(Color.CYAN);
-            Rect rect = new Rect(10, 10, (int) getRightCorner(), (int) getBottomCorner());
-            canvas.drawRect(rect, mPaint);
+        protected void onDraw(Canvas mainCanvas) {
+            super.onDraw(mainCanvas);
+            if (!isErasable) {
+                bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
+                canvas = new Canvas(bitmap);
+                mPaint = new Paint();
+                mPaint.setStyle(Paint.Style.STROKE);
+                mPaint.setStrokeWidth(10);
+                mPaint.setColor(Color.CYAN);
+                RectF rectF = new RectF(10, 10, (int) getRightCorner(), (int) getBottomCorner());
+                canvas.drawRoundRect(rectF, getBorderRadius(), getBorderRadius(), mPaint);
+                mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+            } else {
+                mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+            }
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            System.out.println(isErasable);
+            if (canvas != null) {
+                isErasable = true;
+                System.out.println(isErasable);
+                Paint deletingPaint = new Paint();
+                deletingPaint.setStrokeWidth(30);
+                deletingPaint.setStyle(Paint.Style.STROKE);
+                deletingPaint.setAntiAlias(true);
+                deletingPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+                canvas.drawPoint(event.getX(), event.getY(), deletingPaint);
+                invalidate();
+                return true;
+            } else
+                return false;
         }
     }
     //endregion
