@@ -1,7 +1,7 @@
 package apps.android.borderapp;
 
-
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -36,8 +36,11 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     private float bottomCorner;
     private float rightCorner;
     private Context ctx;
+    private int mainHeight;
+    private int mainWidth;
     private LayoutParams iv_border_params;
     private LayoutParams this_params;
+    private Activity myAct;
     //endregion
 
     //region Getter and Setter
@@ -58,10 +61,12 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     }
     //endregion
 
+
     //region Constructor
     RectangleClass(Context ctx) {
         super(ctx);
         this.ctx = ctx;
+        myAct = (Activity) ctx;
         initContent();
         initParams();
         addViewToMain();
@@ -86,7 +91,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         //
         ic_move = new ImageView(ctx);
         ic_move.setBackground(ContextCompat.getDrawable(this.ctx, R.drawable.circle_image_view_background));
-        ic_move.setImageResource(R.drawable.ic_action_arrow_right_bottom);
+        ic_move.setImageResource(R.drawable.ic_move);
         ic_move.setRotation(135);
         ic_move.setTag(Constant.MOVE);
         //
@@ -96,7 +101,13 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         ic_move.setOnTouchListener(this);
         ic_right.setOnTouchListener(this);
         ic_bottom.setOnTouchListener(this);
-        //   border.setOnTouchListener(this);
+        //
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.myAct.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+        this.mainWidth = width;
+        this.mainHeight = height;
     }
 
     private void initParams() {
@@ -142,6 +153,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
                     int topSize = (int) event.getRawY() - getStatusBarHeight() - getActionBarHeight(this.ctx);
                     params.setMargins((int) event.getRawX(), topSize, 0, 0);
                     this.setLayoutParams(params);
+                    border.invalidate();
                     this.postInvalidate();
                     this.requestLayout();
                 } else if (v.getTag() == Constant.RIGHT) {
@@ -210,7 +222,6 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     //region Rectangle Border Class
     class RectangleBorder extends View implements OnTouchListener {
         public Paint mPaint;
-        public boolean isFinalBitmap;
         public boolean isErasable = false;
         public Bitmap bitmap;
         private Canvas canvas;
@@ -236,6 +247,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
 
         RectF rect;
 
+
         public RectangleBorder(Context context) {
             super(context);
             this.setOnTouchListener(this);
@@ -246,7 +258,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         protected void onDraw(Canvas mainCanvas) {
             super.onDraw(mainCanvas);
             if (!isErasable) {
-                bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
+                bitmap = Bitmap.createBitmap(mainWidth, mainHeight, Bitmap.Config.ARGB_8888);
                 canvas = new Canvas(bitmap);
                 mPaint = new Paint();
                 mPaint.setStyle(Paint.Style.STROKE);
@@ -262,10 +274,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            System.out.println(isErasable);
             if (canvas != null) {
-                isErasable = true;
-                System.out.println(isErasable);
                 Paint deletingPaint = new Paint();
                 deletingPaint.setStrokeWidth(30);
                 deletingPaint.setStyle(Paint.Style.STROKE);

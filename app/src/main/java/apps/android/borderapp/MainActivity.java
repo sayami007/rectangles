@@ -18,9 +18,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        rectangleClass = new RectangleClass(getApplicationContext());
+        rectangleClass = new RectangleClass(this);
         binding.mainView.addView(rectangleClass);
-        rectangleClass.setControlItemsHidden(showItems);
     }
 
     @Override
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 this.showItems = !showItems;
                 return true;
             case R.id.erase:
-                rectangleClass.border.isFinalBitmap = true;
+                rectangleClass.setControlItemsHidden(false);
                 rectangleClass.border.isErasable = true;
                 rectangleClass.border.invalidate();
                 return true;
