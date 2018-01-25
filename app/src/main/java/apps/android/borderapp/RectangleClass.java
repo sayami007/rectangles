@@ -29,7 +29,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     private ImageView ic_move;
     private ImageView ic_right;
     private ImageView ic_bottom;
-    public RectangleBorder border;
+    private RectangleBorder border;
     private LayoutParams iv_move;
     private LayoutParams iv_scale_right;
     private LayoutParams iv_scale_bottom;
@@ -44,6 +44,86 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     //endregion
 
     //region Getter and Setter
+    public RectangleBorder getBorder() {
+        return border;
+    }
+
+    public void setBorder(RectangleBorder border) {
+        this.border = border;
+    }
+
+    public LayoutParams getIv_move() {
+        return iv_move;
+    }
+
+    public void setIv_move(LayoutParams iv_move) {
+        this.iv_move = iv_move;
+    }
+
+    public LayoutParams getIv_scale_right() {
+        return iv_scale_right;
+    }
+
+    public void setIv_scale_right(LayoutParams iv_scale_right) {
+        this.iv_scale_right = iv_scale_right;
+    }
+
+    public LayoutParams getIv_scale_bottom() {
+        return iv_scale_bottom;
+    }
+
+    public void setIv_scale_bottom(LayoutParams iv_scale_bottom) {
+        this.iv_scale_bottom = iv_scale_bottom;
+    }
+
+    public Context getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(Context ctx) {
+        this.ctx = ctx;
+    }
+
+    public int getMainHeight() {
+        return mainHeight;
+    }
+
+    public void setMainHeight(int mainHeight) {
+        this.mainHeight = mainHeight;
+    }
+
+    public int getMainWidth() {
+        return mainWidth;
+    }
+
+    public void setMainWidth(int mainWidth) {
+        this.mainWidth = mainWidth;
+    }
+
+    public LayoutParams getIv_border_params() {
+        return iv_border_params;
+    }
+
+    public void setIv_border_params(LayoutParams iv_border_params) {
+        this.iv_border_params = iv_border_params;
+    }
+
+    public LayoutParams getThis_params() {
+        return this_params;
+    }
+
+    public void setThis_params(LayoutParams this_params) {
+        this.this_params = this_params;
+    }
+
+    public Activity getMyAct() {
+        return myAct;
+    }
+
+    public void setMyAct(Activity myAct) {
+        this.myAct = myAct;
+    }
+
     public float getBottomCorner() {
         return bottomCorner;
     }
@@ -61,18 +141,16 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     }
     //endregion
 
-
     //region Constructor
     RectangleClass(Context ctx) {
         super(ctx);
-        this.ctx = ctx;
-        myAct = (Activity) ctx;
+        setCtx(ctx);
+        setMyAct((Activity) ctx);
         initContent();
         initParams();
         addViewToMain();
     }
     //endregion
-
 
     //region Initialize
     private void initContent() {
@@ -103,11 +181,11 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         ic_bottom.setOnTouchListener(this);
         //
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        this.myAct.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        getMyAct().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         int height = displayMetrics.heightPixels;
-        this.mainWidth = width;
-        this.mainHeight = height;
+        setMainWidth(width);
+        setMainHeight(height);
     }
 
     private void initParams() {
@@ -141,7 +219,6 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         this.addView(ic_bottom, iv_scale_bottom);
     }
     //endregion
-
 
     //region listener
     @Override
@@ -206,9 +283,15 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
 
     public void setControlItemsHidden(boolean isControlItemVisible) {
         if (isControlItemVisible) {
-            ic_move.setVisibility(VISIBLE);
-            ic_right.setVisibility(VISIBLE);
-            ic_bottom.setVisibility(VISIBLE);
+            if (border.isFinalBitmap) {
+                ic_move.setVisibility(VISIBLE);
+                ic_right.setVisibility(GONE);
+                ic_bottom.setVisibility(GONE);
+            } else {
+                ic_move.setVisibility(VISIBLE);
+                ic_right.setVisibility(VISIBLE);
+                ic_bottom.setVisibility(VISIBLE);
+            }
         } else {
             ic_move.setVisibility(GONE);
             ic_right.setVisibility(GONE);
@@ -221,10 +304,46 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
 
     //region Rectangle Border Class
     class RectangleBorder extends View implements OnTouchListener {
-        public Paint mPaint;
-        public boolean isErasable = false;
-        public Bitmap bitmap;
+        private Paint mPaint;
+        private boolean isErasable = false;
+        private boolean isFinalBitmap = false;
+        private Bitmap bitmap;
         private Canvas canvas;
+        private int borderRadius;
+        private RectF rect;
+        //region GetterSetter
+
+        public Paint getmPaint() {
+            return mPaint;
+        }
+
+        public void setmPaint(Paint mPaint) {
+            this.mPaint = mPaint;
+        }
+
+        public boolean isErasable() {
+            return isErasable;
+        }
+
+        public void setErasable(boolean erasable) {
+            isErasable = erasable;
+        }
+
+        public boolean isFinalBitmap() {
+            return isFinalBitmap;
+        }
+
+        public void setFinalBitmap(boolean finalBitmap) {
+            isFinalBitmap = finalBitmap;
+        }
+
+        public Bitmap getBitmap() {
+            return bitmap;
+        }
+
+        public void setBitmap(Bitmap bitmap) {
+            this.bitmap = bitmap;
+        }
 
         public Canvas getCanvas() {
             return canvas;
@@ -234,9 +353,6 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
             this.canvas = canvas;
         }
 
-        private int borderRadius;
-
-
         public int getBorderRadius() {
             return borderRadius;
         }
@@ -245,11 +361,22 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
             this.borderRadius = borderRadius;
         }
 
-        RectF rect;
+        public RectF getRect() {
+            return rect;
+        }
+
+        public void setRect(RectF rect) {
+            this.rect = rect;
+        }
+        //endregion
 
 
         public RectangleBorder(Context context) {
             super(context);
+            setmPaint(new Paint());
+            getmPaint().setStyle(Paint.Style.STROKE);
+            getmPaint().setStrokeWidth(10);
+            getmPaint().setColor(Color.CYAN);
             this.setOnTouchListener(this);
         }
 
@@ -258,15 +385,15 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         protected void onDraw(Canvas mainCanvas) {
             super.onDraw(mainCanvas);
             if (!isErasable) {
-                bitmap = Bitmap.createBitmap(mainWidth, mainHeight, Bitmap.Config.ARGB_8888);
-                canvas = new Canvas(bitmap);
-                mPaint = new Paint();
-                mPaint.setStyle(Paint.Style.STROKE);
-                mPaint.setStrokeWidth(10);
-                mPaint.setColor(Color.CYAN);
-                RectF rectF = new RectF(10, 10, (int) getRightCorner(), (int) getBottomCorner());
-                canvas.drawRoundRect(rectF, getBorderRadius(), getBorderRadius(), mPaint);
-                mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+                if (!isFinalBitmap) {
+                    bitmap = Bitmap.createBitmap(getMainWidth(), getMainHeight(), Bitmap.Config.ARGB_8888);
+                    canvas = new Canvas(bitmap);
+                    setRect(new RectF(10, 10, (int) getRightCorner(), (int) getBottomCorner()));
+                    canvas.drawRoundRect(getRect(), getBorderRadius(), getBorderRadius(), mPaint);
+                    mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+                } else {
+                    mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+                }
             } else {
                 mainCanvas.drawBitmap(bitmap, 0, 0, mPaint);
             }
@@ -288,5 +415,4 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         }
     }
     //endregion
-
 }

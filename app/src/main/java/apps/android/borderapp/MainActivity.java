@@ -1,6 +1,7 @@
 package apps.android.borderapp;
 
 import android.databinding.DataBindingUtil;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -36,11 +37,18 @@ public class MainActivity extends AppCompatActivity {
             case R.id.ok:
                 rectangleClass.setControlItemsHidden(showItems);
                 this.showItems = !showItems;
+                rectangleClass.getBorder().setErasable(false);
                 return true;
             case R.id.erase:
                 rectangleClass.setControlItemsHidden(false);
-                rectangleClass.border.isErasable = true;
-                rectangleClass.border.invalidate();
+                rectangleClass.getBorder().setErasable(true);
+                rectangleClass.getBorder().setFinalBitmap(true);
+                rectangleClass.getBorder().invalidate();
+                return true;
+            case R.id.color:
+                rectangleClass.getBorder().getmPaint().setColor(Color.RED);
+                rectangleClass.getBorder().getmPaint().setStrokeWidth(40);
+                rectangleClass.getBorder().invalidate();
                 return true;
         }
         return false;
