@@ -22,15 +22,17 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-public class RectangleClass extends FrameLayout implements View.OnTouchListener {
+public class MainBorderClass extends FrameLayout implements View.OnTouchListener, View.OnClickListener {
     //region variables
     private static final float BUTTON_SIZE_DP = 20;
     private final float SELF_SIZE_DP = 400;
     private ImageView ic_move;
     private ImageView ic_right;
+    private ImageView ic_set;
     private ImageView ic_bottom;
     private RectangleBorder border;
     private LayoutParams iv_move;
+    private LayoutParams iv_set;
     private LayoutParams iv_scale_right;
     private LayoutParams iv_scale_bottom;
     private float bottomCorner;
@@ -41,9 +43,18 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     private LayoutParams iv_border_params;
     private LayoutParams this_params;
     private Activity myAct;
+    private boolean isControlItemVisible = true;
     //endregion
-
     //region Getter and Setter
+
+    public boolean isControlItemVisible() {
+        return isControlItemVisible;
+    }
+
+    public void setControlItemVisible(boolean controlItemVisible) {
+        isControlItemVisible = controlItemVisible;
+    }
+
     public RectangleBorder getBorder() {
         return border;
     }
@@ -139,10 +150,10 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
     public void setRightCorner(float rightCorner) {
         this.rightCorner = rightCorner - 50;
     }
-    //endregion
+    //endregion4
 
     //region Constructor
-    RectangleClass(Context ctx) {
+    MainBorderClass(Context ctx) {
         super(ctx);
         setCtx(ctx);
         setMyAct((Activity) ctx);
@@ -160,6 +171,12 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         ic_bottom.setTag(Constant.BOTTOM);
         ic_bottom.setImageResource(R.drawable.ic_action_arrow_right_bottom);
         ic_bottom.setRotation(45);
+        //
+        ic_set = new ImageView(ctx);
+        ic_set.setBackground(ContextCompat.getDrawable(this.ctx, R.drawable.circle_image_view_background));
+        ic_set.setTag(Constant.BOTTOM);
+        ic_set.setImageResource(R.drawable.ic_action_arrow_right_bottom);
+        ic_set.setRotation(45);
         //
         ic_right = new ImageView(ctx);
         ic_right.setBackground(ContextCompat.getDrawable(this.ctx, R.drawable.circle_image_view_background));
@@ -179,6 +196,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         ic_move.setOnTouchListener(this);
         ic_right.setOnTouchListener(this);
         ic_bottom.setOnTouchListener(this);
+        ic_set.setOnClickListener(this);
         //
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getMyAct().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -203,6 +221,9 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         iv_move = new LayoutParams(convertDpToPixel(BUTTON_SIZE_DP, getContext()), convertDpToPixel(BUTTON_SIZE_DP, getContext()));
         iv_move.gravity = Gravity.START | Gravity.TOP;
         //
+        iv_set = new LayoutParams(convertDpToPixel(BUTTON_SIZE_DP, getContext()), convertDpToPixel(BUTTON_SIZE_DP, getContext()));
+        iv_set.gravity = Gravity.END | Gravity.TOP;
+        //
         iv_scale_bottom = new LayoutParams(convertDpToPixel(BUTTON_SIZE_DP, getContext()), convertDpToPixel(BUTTON_SIZE_DP, getContext()));
         iv_scale_bottom.gravity = Gravity.BOTTOM | Gravity.CENTER;
         //
@@ -214,6 +235,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
 
     private void addViewToMain() {
         this.addView(border, iv_border_params);
+        this.addView(ic_set, iv_set);
         this.addView(ic_move, iv_move);
         this.addView(ic_right, iv_scale_right);
         this.addView(ic_bottom, iv_scale_bottom);
@@ -281,7 +303,7 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
         return (int) px;
     }
 
-    public void setControlItemsHidden(boolean isControlItemVisible) {
+    public void setControlItemsHidden() {
         if (isControlItemVisible) {
             if (border.isFinalBitmap) {
                 ic_move.setVisibility(VISIBLE);
@@ -296,6 +318,20 @@ public class RectangleClass extends FrameLayout implements View.OnTouchListener 
             ic_move.setVisibility(GONE);
             ic_right.setVisibility(GONE);
             ic_bottom.setVisibility(GONE);
+        }
+        this.postInvalidate();
+        this.requestLayout();
+    }
+
+    @Override
+    public void onClick(View v) {
+        System.out.println(isControlItemVisible);
+        if (isControlItemVisible) {
+            setControlItemVisible(false);
+            setControlItemsHidden();
+        } else {
+            setControlItemVisible(true);
+            setControlItemsHidden();
         }
         this.postInvalidate();
         this.requestLayout();
