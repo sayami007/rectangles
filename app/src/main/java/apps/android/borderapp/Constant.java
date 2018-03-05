@@ -5,8 +5,10 @@ package apps.android.borderapp;
  */
 
 class Constant {
-    public static final String MOVE = "MOVE";
-    public static final String RIGHT= "RIGHT";
-    public static final String BOTTOM = "BOTTOM";
     public static final String BORDER = "BORDER";
+    public static final String LEFT_TOP= "LEFT_TOP ";
+    public static final String LEFT_BOTTOM = "LEFT_BOTTOM ";
+    public static final String RIGHT_TOP= "RIGHT_TOP ";
+    public static final String RIGHT_BOTTOM = "RIGHT_BOTTOM ";
+    public static final String MAIN_VIEW = "MAIN_VIEW";
 }

@@ -1,7 +1,6 @@
 package apps.android.borderapp;
 
 import android.databinding.DataBindingUtil;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -33,19 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.erase:
-                mainBorderClass.setControlItemVisible(false);
-                mainBorderClass.getBorder().setErasable(true);
-                mainBorderClass.getBorder().setFinalBitmap(true);
-                mainBorderClass.getBorder().invalidate();
-                return true;
-            case R.id.color:
-                mainBorderClass.getBorder().getmPaint().setColor(Color.RED);
-                mainBorderClass.getBorder().getmPaint().setStrokeWidth(2000);
-                mainBorderClass.getBorder().invalidate();
-                return true;
-        }
-        return false;
+        return true;
     }
 }
